@@ -5,7 +5,7 @@ import {z} from "zod";
 import formatZodError from "../helpers/formatZodError.js";
 
 //Query (optional) - Params (mandatory)
-//tasks?page=1&limit=10
+//postagens?paginas=1&limit=10
 //req.params.limit --> to retrieve all registered items, must be changed
 
 //validações com ZOD
@@ -16,32 +16,37 @@ const postValidação = z.object({
   autor: z.string().min(3).max(50),
 });
 
+//validação por ID
+const puxarPorID = z.object({
+  id: z.string().uuid(),
+})
 
-//puxar tarefas
+
+//puxar postagens
 export const puxarPostagens = async (req, res) => {
 
-  const page = parseInt(req.query.page) || 1;
+  const paginas = parseInt(req.query.paginas) || 1;
   const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
+  const offset = (paginas - 1) * limit;
   try {
-    const tasks = await Postagem.findAndCountAll({
+    const postagens = await Postagem.findAndCountAll({
       limit,
       offset,
     });
-    const totalPages = Math.ceil(tasks.count / limit);
+    const totalPaginas = Math.ceil(postagens.count / limit);
     res.status(200).json({
-      totalTasks: tasks.count,
-      totalPages,
-      pageActual: page,
-      itemsForPage: limit,
-      nextPage:
-        totalPages === 0
+      totalPostagens: postagens.count,
+      totalPaginas,
+      paginaAtual: paginas,
+      itemsPorPagina: limit,
+      proximaPagina:
+        totalPaginas === 0
           ? null
-          : `http://localhost:3333/tarefas?page=${page + 1}`,
-      tasks: tasks.rows,
+          : `http://localhost:9090/postagens?paginas=${paginas + 1}`,
+      postagens: postagens.rows,
     });
   } catch (error) {
-    res.status(500).json({ msg: "Error in listing tasks" });
+    res.status(500).json({ msg: "Error ao listar a postagem" });
   }
 };
 
@@ -83,34 +88,34 @@ export const postPostagens = async (req, res) => {
   }
 };
 
-//puxar tarefa por ID
-// export const getTarefaID = async (req, res) => {
-//   const bodyValidation = getSchemaID.safeParse(req.params);
-//   if (!bodyValidation.success) {
-//     return res.status(400).json({ 
-//       msg: "Os dados recebidos do corpo da requisição são inválidos", 
-//       detalhes: formatZodError (bodyValidation.error) 
-//     });
-//   }
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json({ errors: errors.array() });
-//   }
+//puxar postagem por ID
+export const puxarPostagemID = async (req, res) => {
+  const bodyValidation = puxarPorID.safeParse(req.params);
+  if (!bodyValidation.success) {
+    return res.status(400).json({ 
+      msg: "Os dados recebidos do corpo da requisição são inválidos", 
+      detalhes: formatZodError (bodyValidation.error) 
+    });
+  }
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-//   try {
-//     const { id } = req.params;
-//     const tarefa = await Postagem.findOne({ where: { id } });
+  try {
+    const { id } = req.params;
+    const postagem = await Postagem.findOne({ where: { id } });
 
-//     if (!tarefa) {
-//       return res.status(404).json({ error: "Task not found" });
-//     }
+    if (!postagem) {
+      return res.status(404).json({ error: "Task not found" });
+    }
 
-//     res.status(200).json(tarefa);
-//   } catch (error) {
-//     console.error("Error in retrieving task by ID:", error);
-//     res.status(500).json({ error: "Failed to find task" });
-//   }
-// };
+    res.status(200).json(postagem);
+  } catch (error) {
+    console.error("Error in retrieving task by ID:", error);
+    res.status(500).json({ error: "Failed to find task" });
+  }
+};
 
 // //atualizar tarefa por ID
 // export const updateTarefa = async (req, res) => {
@@ -197,11 +202,11 @@ export const postPostagens = async (req, res) => {
 //   }
 
 //   try {
-//     const tasks = await Postagem.findAll({ where: { status: situacao }, raw: true });
-//     res.status(200).json(tasks);
+//     const postagens = await Postagem.findAll({ where: { status: situacao }, raw: true });
+//     res.status(200).json(postagens);
 //   } catch (error) {
-//     console.error("Error finding tasks by situation:", error);
-//     res.status(500).json({ error: "Failed to find tasks" });
+//     console.error("Error finding postagens by situation:", error);
+//     res.status(500).json({ error: "Failed to find postagens" });
 //   }
 // };
 
