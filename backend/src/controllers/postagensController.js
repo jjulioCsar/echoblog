@@ -15,7 +15,6 @@ const postValidação = z.object({
   conteudo: z.string().min(50).max(1000),
   autor: z.string().min(3).max(50),
 });
-
 //validação por ID
 const puxarPorID = z.object({
   id: z.string().uuid(),
@@ -97,23 +96,19 @@ export const puxarPostagemID = async (req, res) => {
       detalhes: formatZodError (bodyValidation.error) 
     });
   }
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
 
   try {
     const { id } = req.params;
     const postagem = await Postagem.findOne({ where: { id } });
 
     if (!postagem) {
-      return res.status(404).json({ error: "Task not found" });
+      return res.status(404).json({ error: "Postagem não encontrada" });
     }
 
     res.status(200).json(postagem);
   } catch (error) {
-    console.error("Error in retrieving task by ID:", error);
-    res.status(500).json({ error: "Failed to find task" });
+    console.error("Erro em puxar a postagem pelo id", error);
+    res.status(500).json({ error: "Falha ao achar a postagem" });
   }
 };
 
