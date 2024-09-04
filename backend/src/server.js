@@ -5,14 +5,13 @@ import cors from "cors";
 const PORT = process.env.PORT || 3333
 
 
-
 const app = express();
 
 //rotas
 import postagensRouter from "./routes/postagensRouter.js"; 
 
 //models
-
+import postagensModel from "./models/postagensModel.js";
 
 //3 middlewares
 app.use(cors());
