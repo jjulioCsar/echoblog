@@ -20,6 +20,16 @@ const puxarPorID = z.object({
   id: z.string().uuid(),
 })
 
+const atualizarPostagem = z.object({
+  titulo: z.string().min(3).max(100),
+  conteudo: z.string().min(50).max(1000),
+  autor: z.string().min(3).max(50),
+})
+
+const paramsSchema = z.object({
+  id: z.string().uuid(),
+})
+
 
 //puxar postagens
 export const puxarPostagens = async (req, res) => {
@@ -112,56 +122,56 @@ export const puxarPostagemID = async (req, res) => {
   }
 };
 
-// //atualizar tarefa por ID
-// export const updateTarefa = async (req, res) => {
+//atualizar postagem por ID
+export const postagemAtualizar = async (req, res) => {
   
-// const bodyValidation = updateSchema.safeParse(req.body);
-// if (!bodyValidation.success) {
-//   return res.status(400).json({ 
-//     msg: "Os dados recebidos do corpo da requisição são inválidos", 
-//     detalhes: formatZodError(bodyValidation.error) 
-//   });
-// }
-// const paramsValidation = paramsSchema.safeParse(req.params);
-// if (!paramsValidation.success) {
-//   return res.status(400).json({ 
-//     msg: "Os dados recebidos na URL são inválidos", 
-//     detalhes: formatZodError(paramsValidation.error) 
-//   });
-// } 
+const bodyValidation = atualizarPostagem.safeParse(req.body);
+if (!bodyValidation.success) {
+  return res.status(400).json({ 
+    msg: "Os dados recebidos do corpo da requisição são inválidos", 
+    detalhes: formatZodError(bodyValidation.error) 
+  });
+}
+const paramsValidation = paramsSchema.safeParse(req.params);
+if (!paramsValidation.success) {
+  return res.status(400).json({ 
+    msg: "Os dados recebidos na URL são inválidos", 
+    detalhes: formatZodError(paramsValidation.error) 
+  });
+} 
 
-//   const { id } = req.params;
-//   const { tarefa, descricao, status } = req.body;
+  const { id } = req.params;
+  const { titulo, conteudo, autor } = req.body;
 
-//   //validations
-//   if (!tarefa) {
-//     res.status(404).json({ error: "task is mandatory" });
-//     return;
-//   }
-//   if (!descricao) {
-//     res.status(404).json({ error: "description is mandatory" });
-//     return;
-//   }
-//   if (!status) {
-//     res.status(404).json({ error: "status is mandatory" });
-//     return;
-//   }
+  //validations
+  if (!titulo) {
+    res.status(404).json({ error: "Titulo é obrigatorio" });
+    return;
+  }
+  if (!conteudo) {
+    res.status(404).json({ error: "Descrição é obrigatorio" });
+    return;
+  }
+  if (!autor) {
+    res.status(404).json({ error: "Autor é obrigatorio" });
+    return;
+  }
 
-//   const tarefaAtualizada = {
-//     tarefa,
-//     descricao,
-//     status,
-//   };
-//   console.log(tarefaAtualizada);
+  const postagemAtualizada = {
+    titulo,
+    conteudo,
+    autor,
+  };
+  console.log(postagemAtualizada);
 
-//   try {
-//     await Postagem.update(tarefaAtualizada, { where: { id } });
-//     res.status(200).json({ message: "Task updated successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to update task" });
-//   }
-// };
+  try {
+    await Postagem.update(postagemAtualizada, { where: { id } });
+    res.status(200).json({ message: "Postagem atualizada com sucesso!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Falha em atualizar postagem" });
+  }
+};
 
 // //atualizar status de tarefa por id
 // export const  updateStatusTarefa = async (req, res) => {
