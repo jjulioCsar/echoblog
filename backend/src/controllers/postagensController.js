@@ -173,45 +173,28 @@ if (!paramsValidation.success) {
   }
 };
 
-// //atualizar status de tarefa por id
-// export const  updateStatusTarefa = async (req, res) => {
-//   const { id } = req.params;
-  
-//   try{
-//     const tarefa = await Postagem.findOne({ raw: true, where: { id } });
-//     if(tarefa === null){
-//       return res.status(404).json({ error: "Task not found" });
-//     }
-//     if(tarefa.status === "pendente"){
-//       await Postagem.update({ status: "concluída" }, { where: { id } });
-//     }else if(tarefa.status === "concluída"){
-//       await Postagem.update({ status: "pendente" }, { where: { id } });
-//     }
-    
-//     const taskAtualizada = await Postagem.findOne({ raw: true, where: { id } });
-//     res.status(200).json(taskAtualizada);
-//     } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to find task" });
-//     return;
-//     }
+export const deletarPostagem = async (req, res) => {
+  const paramsValidation = paramsSchema.safeParse(req.params);
+  if (!paramsValidation.success) {
+    return res.status(400).json({
+      msg: "Os dados recebidos na URL são inválidos",
+      detalhes: formatZodError(paramsValidation.error),
+    });
+  }
 
-// };
+  const { id } = paramsValidation.data;
+  try {
+    const postagemDeletada = await Postagem.findByPk(id);
+    if (!postagemDeletada) {
+      return res.status(404).json({ error: "Postagem não encontrada" });
+    }
+    await postagemDeletada.destroy();
+    res.status(200).json({ message: "Postagem deletada com sucesso!" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Falha ao deletar postagem" });
+  }
+}
 
-// //buscar tarefas por status
-// export const buscarTarefaPorSituacao = async (req, res) => {
-//   const { situacao } = req.params;
 
-//   if (situacao !== "pendente" && situacao !== "concluída") {
-//     return res.status(400).json({ error: "Invalid situation, use 'pendente' or 'concluída'" });
-//   }
-
-//   try {
-//     const postagens = await Postagem.findAll({ where: { status: situacao }, raw: true });
-//     res.status(200).json(postagens);
-//   } catch (error) {
-//     console.error("Error finding postagens by situation:", error);
-//     res.status(500).json({ error: "Failed to find postagens" });
-//   }
-// };
 
