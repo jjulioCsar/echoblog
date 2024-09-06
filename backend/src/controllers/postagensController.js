@@ -1,6 +1,7 @@
 import Postagem from "../models/postagensModel.js";
 import {z} from "zod";
 
+
 //ZOD VALIDATIONS
 import formatZodError from "../helpers/formatZodError.js";
 
@@ -196,5 +197,38 @@ export const deletarPostagem = async (req, res) => {
   }
 }
 
+export const atualizarImagemPostagem = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ error: "Imagem não enviada" });
+    }
+
+    const postagem = await Postagem.findByPk(id);
+
+    if (!postagem) {
+      return res.status(404).json({ error: "Postagem não encontrada" });
+    }
+    postagem.imagem = `/uploads/images/${req.file.filename}`;
+    await postagem.save();
+
+    
+    return res.status(200).json({
+      msg: "Imagem enviada com sucesso",
+      imagem: postagem.imagem,
+    });
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Erro de validação",
+        detalhes: formatZodError(error), 
+      });
+    }
+    console.error(error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
 
 
