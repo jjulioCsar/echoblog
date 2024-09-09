@@ -2,6 +2,7 @@ import Usuarios from "../models/usuariosModel.js";
 import { z } from "zod";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
 import formatZodError from "../helpers/formatZodError.js";
 
 const createUsuarios = z.object({
@@ -25,12 +26,9 @@ const loginUsuarios = z.object({
     .email({ message: "O e-mail deve ser um endereço válido." }),
     senha: z.string()
 })
-
-
 const updateParams = z.object({
     id: z.string().uuid("ID deve ser um UUID válido.")
   });
-  
   const updateBody = z.object({
     nome: z.string()
       .min(3, { message: "O nome deve ter pelo menos 3 caracteres." })
@@ -46,7 +44,12 @@ const updateParams = z.object({
       .max(12, { message: "A senha não pode ter mais de 12 caracteres." })
       .optional()
   });
-
+  const queryParams = z.object({
+    nome: z.string().optional(),
+    email: z.string().email().optional(),
+    papel: z.enum(["administrador", "autor", "leitor"]).optional(),
+  });
+  
 export const postUsuarios = async (req, res) => {
   const bodyValidation = createUsuarios.safeParse(req.body);
 
@@ -127,8 +130,6 @@ export const loginUsuario = async (req, res) => {
   }
 };
 
-
-
 export const updateUsuario = async (req, res) => {
     const paramsValidation = updateParams.safeParse(req.params);
     if (!paramsValidation.success) {
@@ -179,6 +180,29 @@ export const updateUsuario = async (req, res) => {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Falha na atualização do usuário" });
+    }
+  };
+
+export const listarUsuarios = async (req, res) => {
+    if (req.user.papel !== 'administrador') {
+      return res.status(403).json({ message: 'Acesso negado' });
+    }
+    const { nome, email, papel } = req.query;
+
+    const filtros = {};
+    if (nome) filtros.nome = { [Op.like]: `%${nome}%` }; 
+    if (email) filtros.email = email;
+    if (papel) filtros.papel = papel;
+  
+    console.log('Parâmetros de consulta:', req.query);
+    console.log('Filtros aplicados:', filtros);
+  
+    try {
+      const usuarios = await Usuarios.findAll({ where: filtros });
+      res.status(200).json(usuarios);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Erro ao listar usuários', error: error.message });
     }
   };
   
