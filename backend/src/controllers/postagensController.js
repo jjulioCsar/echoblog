@@ -1,7 +1,6 @@
 import Postagem from "../models/postagensModel.js";
 import {z} from "zod";
 
-
 //ZOD VALIDATIONS
 import formatZodError from "../helpers/formatZodError.js";
 
