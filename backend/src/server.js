@@ -14,10 +14,12 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Rotas
-import postagensRouter from "./routes/postagensRouter.js"; 
+import postagensRouter from "./routes/postagensRouter.js";
+import usuariosRouter from "./routes/usuariosRouter.js";
 
 // Models
 import postagensModel from "./models/postagensModel.js";
+import usuariosModel from "./models/usuariosModel.js";
 
 // Conexão com banco de dados
 import dbConnection from "./config/dbConnection.js";
@@ -39,7 +41,7 @@ dbConnection.sync().then(() => {
 });
 
 // Definir rotas
-app.use("/", postagensRouter);
+app.use("/", postagensRouter, usuariosRouter);
 
 // Middleware para tratar rotas não encontradas
 app.use((req, res) => {

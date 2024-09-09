@@ -1,6 +1,8 @@
 import { Router} from "express";
-import {} from "../controllers/usuariosController.js";
+import {postUsuarios} from "../controllers/usuariosController.js";
 const router = Router();
 
+// Rotas de usuários
+router.post("/usuarios/registro", postUsuarios); 
 
 export default router;

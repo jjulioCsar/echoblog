@@ -1,6 +1,5 @@
 import Usuarios from "../models/usuariosModel.js";
-import {z} from "zod";
-
+import { z } from "zod";
 
 //ZOD VALIDATIONS
 import formatZodError from "../helpers/formatZodError.js";
@@ -10,7 +9,12 @@ import formatZodError from "../helpers/formatZodError.js";
 //req.params.limit --> to retrieve all registered items, must be changed
 
 //validações com ZOD
-
+const createUsuarios = z.object({
+  nome: z.string().min(3).max(50),
+  email: z.string().email(),
+  senha: z.string().min(8).max(12),
+//   papel: z.enum(["administrador", "autor", "leitor"]),
+});
 //puxar postagens
 // export const puxarPostagens = async (req, res) => {
 
@@ -39,43 +43,48 @@ import formatZodError from "../helpers/formatZodError.js";
 //   }
 // };
 
-// Função de Postar
-// export const postUsuarios = async (req, res) => {
-//   const { titulo, conteudo, dataPublicacao, autor, imagem } = req.body;
+//função registrar usuarios
+export const postUsuarios = async (req, res) => {
+  const bodyValidation = createUsuarios.safeParse(req.body);
+  if (!bodyValidation.success) {
+    return res.status(400).json({
+      msg: "Os dados recebidos do corpo da requisição são inválidos",
+      detalhes: formatZodError(bodyValidation.error),
+    });
+  }
+  const { nome, email, senha } = req.body;
+  const papel = "leitor";
 
-//   // Validação dos campos obrigatórios
-//   if (!titulo) {
-//     return res.status(400).json({ error: "Titulo é obrigatório" });
-//   }
-//   if (!conteudo) {
-//     return res.status(400).json({ error: "Conteúdo é obrigatório" });
-//   }
-//   if (!autor) {
-//     return res.status(400).json({ error: "Autor é obrigatório" });
-//   }
-//   if (!imagem) {
-//     return res.status(400).json({ error: "Imagem é obrigatória" });
-//   }
+  // Validação dos campos obrigatórios
+  if (!nome) {
+    return res.status(400).json({ error: "Nome é obrigatório" });
+  }
+  if (!email) {
+    return res.status(400).json({ error: "Email é obrigatório" });
+  }
+  if (!senha) {
+    return res.status(400).json({ error: "Senha é obrigatório" });
+  }
 
-//   const novaPostagem = { titulo, conteudo, dataPublicacao, autor, imagem};
+  const novoUsuario = { nome, email, senha, papel};
 
-//   try {
-//     // Criação da nova postagem
-//     await Postagem.create(novaPostagem);
-//     return res.status(201).json(novaPostagem);
-//   } catch (error) {
-//     console.error("Erro ao criar a postagem:", error);
-//     return res.status(500).json({ error: "Falha ao criar a imagem" });
-//   }
-// };
+  try {
+    // Criação do novo usuario
+    await Usuarios.create(novoUsuario);
+    return res.status(201).json(novoUsuario);
+  } catch (error) {
+    console.error("Erro ao criar usuario", error);
+    return res.status(500).json({ error: "Falha ao criar usuario" });
+  }
+};
 
 // //puxar postagem por ID
 // export const puxarPostagemID = async (req, res) => {
 //   const bodyValidation = puxarPorID.safeParse(req.params);
 //   if (!bodyValidation.success) {
-//     return res.status(400).json({ 
-//       msg: "Os dados recebidos do corpo da requisição são inválidos", 
-//       detalhes: formatZodError (bodyValidation.error) 
+//     return res.status(400).json({
+//       msg: "Os dados recebidos do corpo da requisição são inválidos",
+//       detalhes: formatZodError (bodyValidation.error)
 //     });
 //   }
 
