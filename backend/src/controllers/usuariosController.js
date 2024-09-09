@@ -29,7 +29,7 @@ const loginUsuarios = z.object({
 const updateParams = z.object({
     id: z.string().uuid("ID deve ser um UUID válido.")
   });
-  const updateBody = z.object({
+const updateBody = z.object({
     nome: z.string()
       .min(3, { message: "O nome deve ter pelo menos 3 caracteres." })
       .max(50, { message: "O nome não pode ter mais de 50 caracteres." })
@@ -44,11 +44,9 @@ const updateParams = z.object({
       .max(12, { message: "A senha não pode ter mais de 12 caracteres." })
       .optional()
   });
-  const queryParams = z.object({
-    nome: z.string().optional(),
-    email: z.string().email().optional(),
-    papel: z.enum(["administrador", "autor", "leitor"]).optional(),
-  });
+const paramsSchema = z.object({
+  id: z.string().uuid("ID deve ser um UUID válido.")
+})
   
 export const postUsuarios = async (req, res) => {
   const bodyValidation = createUsuarios.safeParse(req.body);
@@ -205,4 +203,30 @@ export const listarUsuarios = async (req, res) => {
       res.status(500).json({ message: 'Erro ao listar usuários', error: error.message });
     }
   };
+
+export const deletarUsuario = async (req, res) => {
+    const paramsValidation = paramsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+      return res.status(400).json({
+        msg: "Os dados recebidos na URL são inválidos",
+        detalhes: formatZodError(paramsValidation.error),
+      });
+    }
+
+    if (req.user.papel !== 'administrador') {
+      return res.status(403).json({ message: 'Acesso negado' });
+    }
   
+    const { id } = paramsValidation.data;
+    try {
+      const usuarioDeletado = await Usuarios.findByPk(id);
+      if (!usuarioDeletado) {
+        return res.status(404).json({ error: "Usuario não encontradpo" });
+      }
+      await usuarioDeletado.destroy();
+      res.status(200).json({ message: "Usuario deletado com sucesso!" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Falha ao deletar usuario" });
+    }
+  }
