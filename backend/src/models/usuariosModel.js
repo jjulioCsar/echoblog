@@ -2,38 +2,33 @@ import dbConnection from "../config/dbConnection.js"
 import { DataTypes } from "sequelize";
 
 const Usuarios = dbConnection.define("usuarios", {
-    id:{
+    id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
-        primaryKey: true    
-    },
-    nome:{
+        primaryKey: true,
+      },
+      nome: {
         type: DataTypes.STRING,
         allowNull: false,
-        required: true
-    },
-    email:{
+      },
+      email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
         validate: {
-            isEmail: true
-        }
-    },
-    senha:{
+          isEmail: true 
+        },
+        unique: true
+      },
+      senha: {
         type: DataTypes.STRING,
         allowNull: false,
-        required: true
-    },
-    papel:{
-        type: DataTypes.ENUM,
-        allowNull: true,
-        defaultValue: "leitor" ,
-        values: ["administrador", "autor", "leitor"]
-    }
-},{
-    tableName: "Usuarios"
-}
-);
+      },
+      papel: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        values: ["administrador", "autor", "leitor"],
+        defaultValue: "leitor",
+      },
+    });
 
 export default Usuarios;

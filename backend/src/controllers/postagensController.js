@@ -3,6 +3,7 @@ import {z} from "zod";
 
 //ZOD VALIDATIONS
 import formatZodError from "../helpers/formatZodError.js";
+import Usuarios from "../models/usuariosModel.js";
 
 //Query (optional) - Params (mandatory)
 //postagens?paginas=1&limit=10
@@ -12,8 +13,9 @@ import formatZodError from "../helpers/formatZodError.js";
 //validação post :
 const postValidação = z.object({
   titulo: z.string().min(3).max(100),
-  conteudo: z.string().min(50).max(1000),
-  autor: z.string().min(3).max(50),
+  conteudo: z.string().min(5).max(1000),
+  usuarioId: z.string().uuid(),
+  imagem: z.string().url().optional() 
 });
 //validação por ID
 const puxarPorID = z.object({
@@ -61,39 +63,26 @@ export const puxarPostagens = async (req, res) => {
 
 // Função de Postar
 export const postPostagens = async (req, res) => {
-  const bodyValidation = postValidação.safeParse(req.body);
-  if (!bodyValidation.success) {
-    return res.status(400).json({ 
-      msg: "Os dados recebidos do corpo da requisição são inválidos", 
-      detalhes: formatZodError (bodyValidation.error) 
-    });
-  }
-
-  const { titulo, conteudo, dataPublicacao, autor, imagem } = req.body;
-
-  // Validação dos campos obrigatórios
-  if (!titulo) {
-    return res.status(400).json({ error: "Titulo é obrigatório" });
-  }
-  if (!conteudo) {
-    return res.status(400).json({ error: "Conteúdo é obrigatório" });
-  }
-  if (!autor) {
-    return res.status(400).json({ error: "Autor é obrigatório" });
-  }
-  if (!imagem) {
-    return res.status(400).json({ error: "Imagem é obrigatória" });
-  }
-
-  const novaPostagem = { titulo, conteudo, dataPublicacao, autor, imagem};
-
   try {
-    // Criação da nova postagem
-    await Postagem.create(novaPostagem);
-    return res.status(201).json(novaPostagem);
+    const { titulo, conteudo, usuarioId, imagem } = postValidação.parse(req.body);
+
+    const usuario = await Usuarios.findByPk(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({ msg: "Usuário não encontrado" });
+    }
+
+    const novaPostagem = await Postagem.create({
+      titulo,
+      conteudo,
+      usuarioId,
+      dataPublicacao: new Date(),
+      imagem,
+    });
+
+    res.status(201).json({ msg: "Postagem criada com sucesso", postagem: novaPostagem });
   } catch (error) {
-    console.error("Erro ao criar a postagem:", error);
-    return res.status(500).json({ error: "Falha ao criar a imagem" });
+    console.error(error);
+    res.status(400).json({ msg: "Erro ao criar postagem", error: error.message });
   }
 };
 
@@ -230,6 +219,21 @@ export const atualizarImagemPostagem = async (req, res) => {
   }
 };
 
+export const listarPostagensPorAutor = async (req, res) => {
+  try {
+    const { autor } = req.query;
 
+    const filtro = {};
+    if (autor) {
+      filtro.usuarioId = autor;
+    }
+
+    const postagens = await Postagem.findAll({ where: filtro });
+
+    res.status(200).json(postagens);
+  } catch (error) {
+    res.status(500).json({ msg: "Erro ao listar postagens", error: error.message });
+  }
+};
 
 

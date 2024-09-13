@@ -1,40 +1,32 @@
 import dbConnection from "../config/dbConnection.js"
 import { DataTypes } from "sequelize";
 
-const Postagem = dbConnection.define("tarefas", {
-    id:{
+const Postagem = dbConnection.define("Postagens", {
+    id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
-        primaryKey: true    
-    },
-    titulo:{
+        primaryKey: true,
+      },
+      titulo: {
         type: DataTypes.STRING,
         allowNull: false,
-        required: true
-    },
-    conteudo:{
-        type: DataTypes.STRING,
+      },
+      conteudo: {
+        type: DataTypes.TEXT,
         allowNull: false,
-        required: true
-    },
-    dataPublicacao:{
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        allowNull: false,
-        required: true
-    },
-    autor:{
+      },
+      usuarioId: {
+        type: DataTypes.UUID,
+        references: {
+          model: 'usuarios',
+          key: 'id',
+        },
+        allowNull: false, 
+      },
+      imagem: {
         type: DataTypes.STRING,
-        allowNull: false,
-        required: true
-    },
-    imagem:{
-        type: DataTypes.STRING,
-        required: true
-    }
-},{
-    tableName: "Postagem"
-}
-);
+        defaultValue: null
+      }
+    });
 
 export default Postagem;
